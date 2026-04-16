@@ -13,6 +13,10 @@ mkdir -p "$OPENCLAW_WORKSPACE"
 ############################
 git config --global init.defaultBranch main
 
+# Ensure the workspace is writable and visible
+mkdir -p "$OPENCLAW_WORKSPACE"
+chmod 777 "$OPENCLAW_WORKSPACE"
+
 if [ -n "$GIT_USER_NAME" ]; then
   git config --global user.name "$GIT_USER_NAME"
 fi
@@ -54,8 +58,7 @@ fi
 echo "🧩 Writing OpenClaw config…"
 mkdir -p ~/.openclaw
 
-# Satisfy security guardrail: LAN binding REQUIRES a token.
-GATEWAY_AUTH_TOKEN="${GATEWAY_TOKEN:-openclaw-secret}"
+# Memory Repo logic
 
 TELEGRAM_ENABLED=$( [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && echo "true" || echo "false" )
 TELEGRAM_ALLOW_LIST=$( [ -n "${TELEGRAM_ALLOWED_USER_ID:-}" ] && echo "\"${TELEGRAM_ALLOWED_USER_ID}\"" || echo "" )
@@ -65,9 +68,6 @@ cat > ~/.openclaw/openclaw.json <<EOF
   "gateway": {
     "mode": "local",
     "bind": "lan",
-    "auth": {
-      "token": "$GATEWAY_AUTH_TOKEN"
-    },
     "controlUi": {
       "allowedOrigins": ["*"]
     }
@@ -131,9 +131,10 @@ EOF
 ############################
 # 4. Start OpenClaw gateway (HF expects port 7860)
 ############################
-echo "🚀 Starting OpenClaw gateway on port 7860…"
-openclaw gateway --port 7860 --verbose &
-echo "✅ Gateway started (running in background)."
+# 🚀 Starting OpenClaw gateway on port 7860…
+# We use --bind lan and --port 7860 to satisfy Hugging Face network routing.
+openclaw gateway --port 7860 --bind lan &
+echo "✅ Gateway started on port 7860 (running in background)."
 
 ############################
 # 5. 15-min memory Git sync loop
