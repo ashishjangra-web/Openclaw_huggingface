@@ -1,4 +1,5 @@
 # 🦞 OpenClaw: Autonomous AI Agent Space
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ### 🚀 Free 24/7 Cloud Version
 
 > [!CAUTION]
